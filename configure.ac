@@ -7,7 +7,7 @@
 ##
 AC_PREREQ([2.69])
 
-AC_INIT([frr], [8.3.1], [https://github.com/frrouting/frr/issues])
+AC_INIT([frr], [8.3.1-rv], [https://github.com/routeviews/issues/issues])
 PACKAGE_URL="https://frrouting.org/"
 AC_SUBST([PACKAGE_URL])
 PACKAGE_FULLNAME="FRRouting"
@@ -751,6 +751,9 @@ AC_ARG_WITH([frr-format],
 
 AC_ARG_ENABLE([version-build-config],
   AS_HELP_STRING([--disable-version-build-config], [do not include build configs in show version command]))
+AC_ARG_ENABLE(privileged_vty,
+    AS_HELP_STRING([--enable-privileged-vty], [Allow vty to bind to privileged ports]))
+
 
 #if openssl, else use the internal
 AS_IF([test "$with_crypto" = "openssl"], [
@@ -827,6 +830,11 @@ AC_DEFINE_UNQUOTED([DFLT_NAME], ["$DFLT_NAME"], [Name of the configuration defau
 if test "$enable_shell_access" = "yes"; then
    AC_DEFINE([HAVE_SHELL_ACCESS], [1], [Allow user to use ssh/telnet/bash, be aware this is considered insecure])
 fi
+
+if test "${enable_privileged_vty}" = "yes"; then
+    AC_DEFINE([HAVE_PRIV_VTY],,[Allow vty to bind to privileged ports])
+fi
+
 
 #
 # Python for clippy

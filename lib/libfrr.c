@@ -1065,7 +1065,19 @@ static void frr_vty_serv(void)
 		di->vty_path = vtypath_default;
 	}
 
-	vty_serv_sock(di->vty_addr, di->vty_port, di->vty_path);
+#if defined(HAVE_PRIV_VTY)
+    if (di->privs->change(ZPRIVS_RAISE)) {
+        zlog_err("unable to raise privs for %s's, vty", di->name);
+    }
+#endif
+
+    vty_serv_sock(di->vty_addr, di->vty_port, di->vty_path);
+
+#if defined(HAVE_PRIV_VTY)
+    if (di->privs->change(ZPRIVS_LOWER)) {
+        zlog_err("unable to lower privs for %s's, vty", di->name);
+    }
+#endif
 }
 
 static void frr_check_detach(void)
