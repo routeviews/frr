@@ -61,7 +61,6 @@ override_dh_auto_configure:
 		--disable-protobuf \
 		--disable-zeromq \
 		--enable-ospfapi \
-		--enable-bgp-vnc \
 		--enable-multipath=256 \
 		\
 		--enable-user=frr \
@@ -69,6 +68,7 @@ override_dh_auto_configure:
 		--enable-vty-group=frrvty \
 		--enable-configfile-mask=0640 \
 		--enable-logfile-mask=0640 \
+		--enable-privileged-vty \
 		# end
 
 override_dh_auto_install:
