@@ -828,6 +828,13 @@ if test "$enable_shell_access" = "yes"; then
    AC_DEFINE([HAVE_SHELL_ACCESS], [1], [Allow user to use ssh/telnet/bash, be aware this is considered insecure])
 fi
 
+AC_ARG_ENABLE(privileged_vty,
+    AS_HELP_STRING([--enable-privileged-vty], [Allow vty to bind to privileged ports]))
+
+if test "${enable_privileged_vty}" = "yes"; then
+    AC_DEFINE([HAVE_PRIV_VTY],,[Allow vty to bind to privileged ports])
+fi
+
 #
 # Python for clippy
 #
