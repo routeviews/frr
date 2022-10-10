@@ -7,8 +7,8 @@ all:
     BUILD +pkg-march --DISTRO=ubuntu --RELEASE=20.04 # focal
     BUILD +pkg-march --DISTRO=ubuntu --RELEASE=22.04 # jammy
 
-    #BUILD +pkg --DISTRO=centos --RELEASE=7
-    #BUILD +pkg --DISTRO=centos --RELEASE=8
+    BUILD +pkg-march --DISTRO=centos --RELEASE=7
+    BUILD +pkg-march --DISTRO=centos --RELEASE=8
 
 os-one:
     ARG --required DISTRO
@@ -23,6 +23,7 @@ os-one:
                 sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
             RUN dnf install -y dnf-plugins-core
             RUN dnf config-manager --set-enabled powertools
+            RUN yum -y install epel-release
             RUN dnf install -y \
                 ca-certificates
         ELSE
@@ -42,6 +43,45 @@ deps-one:
     ARG --required TARGETARCH
     FROM +os-one --DISTRO=${DISTRO} --RELEASE=${RELEASE}
 
+    IF [ "${DISTRO}" = "centos" ]
+       RUN yum install -y --setopt=skip_missing_names_on_install=False \
+           git cmake \
+           autoconf automake \
+           libtool make \
+           readline-devel \
+           texinfo \
+           net-snmp-devel \
+           groff \
+           pkgconfig \
+           json-c-devel \
+           pam-devel \
+           bison flex \
+           c-ares-devel \
+           libcap-devel \
+           elfutils-libelf-devel \
+           libssh libssh-devel \
+           libunwind-devel
+       IF [ "${RELEASE}" = "7" ]
+          RUN yum install -y --setopt=skip_missing_names_on_install=False \
+              pytest python-devel python-sphinx
+       ELSE
+          RUN yum install -y --setopt=skip_missing_names_on_install=False \
+              python3-pytest python3-devel python3-sphinx
+       END
+
+       # libyang
+       RUN git clone https://github.com/CESNET/libyang.git /libyang && \
+           cd /libyang && \
+           git checkout v2.0.0 && \
+           mkdir build && cd build && \
+           cmake -D CMAKE_INSTALL_PREFIX:PATH=/usr \
+                 -D CMAKE_BUILD_TYPE:String="Release" .. && \
+           make && make install
+
+       # librtr
+       # TODO
+
+    ELSE
     RUN DEBIAN_FRONTEND=noninteractive \
         apt-get install -y --no-install-recommends \
             autoconf automake \
@@ -62,6 +102,7 @@ deps-one:
             libelf-dev \
             libunwind-dev \
             wget
+    END
 
     # only "new" releases have libyang and librtr
     IF [ "${TARGETARCH}" = "arm64" ]
@@ -69,6 +110,10 @@ deps-one:
     ELSE
         ARG frr_arch="x86_64"
     END
+
+    IF [ "${DISTRO}" = "centos" ]
+
+    ELSE
     IF [ "$DISTRO" = "ubuntu" ] && [ "${RELEASE}" = "20.04" ]
         # libyang
         ARG yang_base="https://ci1.netdef.org/artifact/LIBYANG-LIBYANGV2/shared/build-12"
@@ -93,6 +138,7 @@ deps-one:
         DEBIAN_FRONTEND=noninteractive \
         apt install -y --no-install-recommends \
             ./frr-build-deps_8.5~dev-1_all.deb
+    END
 
 pkg-one:
         ARG DISTRO=${DEFAULT_DISTRO}
@@ -101,7 +147,9 @@ pkg-one:
         FROM +deps-one --DISTRO=${DISTRO} --RELEASE=${RELEASE}
         COPY --dir * .
         IF [ "${DISTRO}" = "centos" ]
-           RUN echo "TODO"
+           RUN ./bootstrap.sh && \
+               ./configure && \
+               make dist
         ELSE
            RUN dpkg-buildpackage -b -rfakeroot -us -uc
            SAVE ARTIFACT ../*.deb AS LOCAL ./dist/${TARGETPLATFORM}/${DISTRO}/${RELEASE}/
