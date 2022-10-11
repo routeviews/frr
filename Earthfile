@@ -4,17 +4,17 @@ ARG DEFAULT_DISTRO=ubuntu
 ARG DEFAULT_RELEASE=22.04
 
 all:
-    BUILD +pkg-march --DISTRO=ubuntu --RELEASE=20.04 # focal
-    BUILD +pkg-march --DISTRO=ubuntu --RELEASE=22.04 # jammy
+    BUILD +pkg --DISTRO=ubuntu --RELEASE=20.04 # focal
+    BUILD +pkg --DISTRO=ubuntu --RELEASE=22.04 # jammy
 
-    BUILD +pkg-march --DISTRO=centos --RELEASE=7
-    BUILD +pkg-march --DISTRO=centos --RELEASE=8
+    BUILD +pkg --DISTRO=centos --RELEASE=7
+    BUILD +pkg --DISTRO=centos --RELEASE=8
 
 os-one:
     ARG --required DISTRO
     ARG --required RELEASE
     ARG --required TARGETARCH
-    FROM ${DISTRO}:${RELEASE}
+    FROM --platform=${TARGETPLATFORM} ${DISTRO}:${RELEASE}
     WORKDIR /build
 
     IF [ "${DISTRO}" = "centos" ]
@@ -44,10 +44,13 @@ deps-one:
     FROM +os-one --DISTRO=${DISTRO} --RELEASE=${RELEASE}
 
     IF [ "${DISTRO}" = "centos" ]
+       RUN curl -O https://rpm.frrouting.org/repo/frr-stable-repo-1-0.el7.noarch.rpm && \
+           yum install -y ./frr-stable*
        RUN yum install -y --setopt=skip_missing_names_on_install=False \
            git cmake \
            autoconf automake \
            libtool make \
+           rpm-build \
            readline-devel \
            texinfo \
            net-snmp-devel \
@@ -60,26 +63,17 @@ deps-one:
            libcap-devel \
            elfutils-libelf-devel \
            libssh libssh-devel \
-           libunwind-devel
+           libunwind-devel \
+           systemd-devel \
+           libyang2-devel \
+           librtr-devel
        IF [ "${RELEASE}" = "7" ]
           RUN yum install -y --setopt=skip_missing_names_on_install=False \
               pytest python-devel python-sphinx
        ELSE
           RUN yum install -y --setopt=skip_missing_names_on_install=False \
-              python3-pytest python3-devel python3-sphinx
+              python3 python3-pytest python3-devel python3-sphinx
        END
-
-       # libyang
-       RUN git clone https://github.com/CESNET/libyang.git /libyang && \
-           cd /libyang && \
-           git checkout v2.0.0 && \
-           mkdir build && cd build && \
-           cmake -D CMAKE_INSTALL_PREFIX:PATH=/usr \
-                 -D CMAKE_BUILD_TYPE:String="Release" .. && \
-           make && make install
-
-       # librtr
-       # TODO
 
     ELSE
     RUN DEBIAN_FRONTEND=noninteractive \
@@ -150,16 +144,23 @@ pkg-one:
            RUN ./bootstrap.sh && \
                ./configure && \
                make dist
+           RUN mkdir -p rpmbuild/SOURCES rpmbuild/SPECS && \
+               cp redhat/*.spec rpmbuild/SPECS/ && \
+               cp frr*.tar.gz rpmbuild/SOURCES/.
+           RUN rpmbuild \
+               --define "_topdir `pwd`/rpmbuild" \
+               -ba rpmbuild/SPECS/frr.spec
+           SAVE ARTIFACT /build/rpmbuild/RPMS/*/*.rpm AS LOCAL \
+                ./dist/${TARGETPLATFORM}/${DISTRO}/${RELEASE}/
         ELSE
            RUN dpkg-buildpackage -b -rfakeroot -us -uc
-           SAVE ARTIFACT ../*.deb AS LOCAL ./dist/${TARGETPLATFORM}/${DISTRO}/${RELEASE}/
+           SAVE ARTIFACT ../*.deb AS LOCAL \
+                ./dist/${TARGETPLATFORM}/${DISTRO}/${RELEASE}/
         END
 
-pkg-march:
+pkg:
         ARG --required DISTRO
         ARG --required RELEASE
-        BUILD \
-              --platform=linux/arm64 \
-              --platform=linux/amd64 \
-              +pkg-one \
+        BUILD +pkg-one \
+                  --platform=linux/amd64 \
                   --DISTRO=${DISTRO} --RELEASE=${RELEASE}
