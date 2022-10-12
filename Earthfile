@@ -23,13 +23,9 @@ os-one:
                 sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
             RUN dnf install -y dnf-plugins-core
             RUN dnf config-manager --set-enabled powertools
-            RUN yum -y install epel-release
-            RUN dnf install -y \
-                ca-certificates
-        ELSE
-            RUN yum install -y --setopt=skip_missing_names_on_install=False \
-                ca-certificates
         END
+        RUN yum install -y --setopt=skip_missing_names_on_install=False \
+                ca-certificates
     ELSE
         RUN DEBIAN_FRONTEND=noninteractive \
             apt-get update && apt-get install -y --no-install-recommends \
@@ -45,7 +41,13 @@ deps-one:
 
     IF [ "${DISTRO}" = "centos" ]
        RUN curl -O https://rpm.frrouting.org/repo/frr-stable-repo-1-0.el7.noarch.rpm && \
-           yum install -y ./frr-stable*
+           yum install -y ./frr-stable* && \
+           yum install -y --setopt=skip_missing_names_on_install=False \
+               librtr-devel libyang2-devel
+
+       RUN yum install -y --setopt=skip_missing_names_on_install=False \
+                epel-release
+
        RUN yum install -y --setopt=skip_missing_names_on_install=False \
            git cmake \
            autoconf automake \
@@ -65,14 +67,12 @@ deps-one:
            libssh libssh-devel \
            libunwind-devel \
            systemd-devel \
-           libyang2-devel \
-           librtr-devel
+           python3 python3-devel python3-sphinx
        IF [ "${RELEASE}" = "7" ]
-          RUN yum install -y --setopt=skip_missing_names_on_install=False \
-              pytest python-devel python-sphinx
+          RUN pip3 install pytest
        ELSE
           RUN yum install -y --setopt=skip_missing_names_on_install=False \
-              python3 python3-pytest python3-devel python3-sphinx
+              python3-pytest
        END
 
     ELSE
