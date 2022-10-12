@@ -29,6 +29,7 @@
 %{!?with_rtadv:         %global  with_rtadv         1 }
 %{!?with_watchfrr:      %global  with_watchfrr      1 }
 %{!?with_pathd:         %global  with_pathd         1 }
+%{!?with_privileged_vty: %global with_privileged_vty 1 }
 
 # user and group
 %{!?frr_user:           %global  frr_user           frr }
@@ -419,6 +420,9 @@ routing state through standard SNMP MIBs.
     --enable-pathd \
 %else
     --disable-pathd \
+%endif
+%if %{with_privileged_vty}
+    --enable-privileged-vty \
 %endif
     --enable-snmp
     # end
