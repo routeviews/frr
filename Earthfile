@@ -153,6 +153,26 @@ pkg-one:
                cp frr*.tar.gz rpmbuild/SOURCES/.
            RUN rpmbuild \
                --define "_topdir `pwd`/rpmbuild" \
+               --define "with_babeld 0" \
+               --define "with_bfdd 1" \
+               --define "with_bgpvnc 0" \
+               --define "with_cumulus 0" \
+               --define "with_eigrpd 1" \
+               --define "with_fpm 0" \
+               --define "with_ldpd 0" \
+               --define "with_multipath 1" \
+               --define "with_nhrpd 0" \
+               --define "with_ospfapi 1" \
+               --define "with_ospfclient 1" \
+               --define "with_pam 0" \
+               --define "with_pbrd 0" \
+               --define "with_pimd 0" \
+               --define "with_pim6d 0" \
+               --define "with_vrrpd 0" \
+               --define "with_rtadv 0" \
+               --define "with_watchfrr 1" \
+               --define "with_pathd 0" \
+               --define "with_privileged_vty 1" \
                -ba rpmbuild/SPECS/frr.spec
            SAVE ARTIFACT /build/rpmbuild/RPMS/*/*.rpm AS LOCAL \
                 ./dist/${TARGETPLATFORM}/${DISTRO}/${RELEASE}/
