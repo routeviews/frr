@@ -140,6 +140,10 @@ pkg-one:
         ARG TARGETPLATFORM
         FROM +deps-one --DISTRO=${DISTRO} --RELEASE=${RELEASE}
         COPY --dir * .
+        # Append -rv to the frr version
+        # We do this here so that it's easier to apply the rv-specific patches to new releases
+        RUN sed -ri 's/^AC_INIT\(\[frr\], \[(.+)\], /AC_INIT([frr], [\1-rv], /' configure.ac && \
+            grep AC_INIT configure.ac
         IF [ "${DISTRO}" = "centos" ]
            RUN ./bootstrap.sh && \
                ./configure && \
