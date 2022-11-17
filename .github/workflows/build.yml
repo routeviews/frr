@@ -19,14 +19,16 @@ jobs:
       FORCE_COLOR: 1
     steps:
     - uses: actions/checkout@v3
-    - name: Docker Login
-      run: docker login --username "$DOCKERHUB_USERNAME" --password "$DOCKERHUB_TOKEN"
-    - name: Download latest earthly
-      run: "sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.6.29/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'"
-    - name: Earthly version
-      run: earthly --version
-    - name: Run build
-      run: earthly --ci +ubuntu-22
+    - name: Check parent directory
+      run: ls ../
+    # - name: Docker Login
+    #   run: docker login --username "$DOCKERHUB_USERNAME" --password "$DOCKERHUB_TOKEN"
+    # - name: Download latest earthly
+    #   run: "sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.6.29/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'"
+    # - name: Earthly version
+    #   run: earthly --version
+    # - name: Run build
+    #   run: earthly --ci +centos-7
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
