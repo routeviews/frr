@@ -6,7 +6,9 @@ name: Build FRR
 on:
   workflow_dispatch:
   push:
-    branches: [ rv ]
+    branches:
+      - rv
+      - earthly-GH-Actions
 
 jobs:
   build:
