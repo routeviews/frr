@@ -28,3 +28,9 @@ jobs:
       run: earthly --version
     - name: Run build
       run: earthly --ci +ubuntu-22
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: FRR-packages
+        path: dist/
+        retention-days: 5
