@@ -4,7 +4,10 @@ ARG DEFAULT_DISTRO=ubuntu
 ARG DEFAULT_RELEASE=22.04
 
 ubuntu-22:
-    BUILD +pkg --DISTRO=ubuntu --RELEASE=20.04 # focal
+    BUILD +pkg --DISTRO=ubuntu --RELEASE=22.04 # focal
+
+centos-7:
+    BUILD +pkg --DISTRO=centos --RELEASE=7
 
 all:
     BUILD +pkg --DISTRO=ubuntu --RELEASE=20.04 # focal
