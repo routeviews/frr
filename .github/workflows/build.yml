@@ -1,0 +1,39 @@
+# .github/workflows/build.yml
+# Started from: https://docs.earthly.dev/ci-integration/vendor-specific-guides/gh-actions-integration
+
+name: Build FRR
+
+on:
+  push:
+    branches:
+      - rv-frr-8.0.1
+      - rv-frr-8.1
+      - rv-frr-8.3.1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      EARTHLY_TARGET: +centos-7
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      FORCE_COLOR: 1
+    steps:
+    - uses: actions/checkout@v3
+    - name: Docker Login
+      run: docker login --username "$DOCKERHUB_USERNAME" --password "$DOCKERHUB_TOKEN"
+    - name: Download latest earthly
+      run: "sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.6.29/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'"
+    - name: Earthly version
+      run: earthly --version
+    - name: Run build
+      run: earthly --ci "$EARTHLY_TARGET"
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: FRR-packages
+        path: |
+          dist/
+          ../*.debs
+          ../*.rpms
+        retention-days: 5
