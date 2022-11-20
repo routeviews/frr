@@ -137,7 +137,7 @@ deps-one:
     RUN mk-build-deps --remove debian/control && \
         DEBIAN_FRONTEND=noninteractive \
         apt install -y --no-install-recommends \
-            ./frr-build-deps_8.5~dev-1_all.deb
+            ./frr-build-deps_*.deb
     END
 
 pkg-one:
