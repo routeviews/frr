@@ -11,6 +11,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: centos:7
     env:
       EARTHLY_TARGET: +centos-7
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -30,13 +32,18 @@ jobs:
     - name: Run build
       run: earthly --ci "$EARTHLY_TARGET"
       working-directory: frr
+    - name: Debugging missing packages
+      run: |
+        ls /build/rpmbuild/RPMS/
+        ls frr/*.deb
+        ls frr/dist/
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
         name: FRR-packages
         path: |
+          /build/rpmbuild/RPMS/**/*.rpm
           frr/dist/
           *.debs
           *.rpms
-          /build/rpmbuild/RPMS/**/*.rpm
         retention-days: 5
