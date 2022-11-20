@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      EARTHLY_TARGET: +centos-7
+      EARTHLY_TARGET: +ubuntu-22
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       FORCE_COLOR: 1
@@ -34,14 +34,19 @@ jobs:
       run: |
         find . -type f -name "*.deb"
         find . -type f -name "*.rpm"
-        ls /build/rpmbuild/RPMS/
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
         name: FRR-packages
         path: |
-          /build/rpmbuild/RPMS/**/*.rpm
-          frr/dist/
-          *.debs
-          *.rpms
+          **/*.debs
+          **/*.rpms
         retention-days: 5
+    - name: Debugging missing debs
+      run: find . -type f -name "*.deb"
+    - name: Debugging missing rpms
+      run: find . -type f -name "*.rpm"
+    - name: Debugging missing debs
+      run: find / -type f -name "*.deb"
+    - name: Debugging missing rpms
+      run: find / -type f -name "*.rpm"
