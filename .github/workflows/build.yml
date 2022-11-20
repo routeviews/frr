@@ -17,7 +17,10 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       FORCE_COLOR: 1
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout this branch
+      uses: actions/checkout@v3
+      with:
+        path: frr
     - name: Docker Login
       run: docker login --username "$DOCKERHUB_USERNAME" --password "$DOCKERHUB_TOKEN"
     - name: Download latest earthly
@@ -26,12 +29,13 @@ jobs:
       run: earthly --version
     - name: Run build
       run: earthly --ci "$EARTHLY_TARGET"
+      working-directory: frr
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
         name: FRR-packages
         path: |
-          dist/
-          ../*.debs
-          ../*.rpms
+          frr/dist/
+          *.debs
+          *.rpms
         retention-days: 5
