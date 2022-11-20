@@ -38,4 +38,5 @@ jobs:
           frr/dist/
           *.debs
           *.rpms
+          /build/rpmbuild/RPMS/**/*.rpm
         retention-days: 5
