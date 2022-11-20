@@ -20,9 +20,9 @@ git checkout -b rv-frr-8.3.1 upstream/frr-8.3.1
 git cherry-pick rv-patch-1
 git cherry-pick rv-patch-2
 ```
-3. Also, cherry pick the [RV-CICD branch](#rv-cicd-branch) into the new branch (enabling GitHub Actions to run Earthly builds).
+3. Next, 'git merge' the [RV-CICD branch](#rv-cicd-branch) into the new branch (enabling GitHub Actions to run Earthly builds).
 ```
-git merge rv-CICD
+git merge --allow-unrelated-histories rv-CICD
 ```
 4. Remove any superfluous github workflows -- we only need ".github/workflows/build.yml" 
    1. Skipping this step can result in wasted 'GitHub Actions minutes!'
