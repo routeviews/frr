@@ -11,8 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: centos:7
     env:
       EARTHLY_TARGET: +centos-7
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -34,9 +32,9 @@ jobs:
       working-directory: frr
     - name: Debugging missing packages
       run: |
+        find . -type f -name "*.deb"
+        find . -type f -name "*.rpm"
         ls /build/rpmbuild/RPMS/
-        ls frr/*.deb
-        ls frr/dist/
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
